@@ -2,6 +2,7 @@ package me.toy.jwpjpa.station;
 
 import me.toy.jwpjpa.line.Line;
 import me.toy.jwpjpa.linestation.LineStation;
+import me.toy.jwpjpa.linestation.PreStationInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,37 +30,52 @@ public class StationRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Line line_shin = Line.builder()
+        Line lineShin = Line.builder()
                 .name("신분당선")
                 .color("빨강색")
                 .build();
 
-        Line line_2 = Line.builder()
+        Line lineTwo = Line.builder()
                 .name("2호선")
                 .color("초록색")
                 .build();
 
-        entityManager.persist(line_shin);
-        entityManager.persist(line_2);
+        entityManager.persist(lineShin);
+        entityManager.persist(lineTwo);
 
-        stationRepository.save(Station.builder()
-                .name("판교역")
-                .lines(Arrays.asList(line_shin))
-                .build());
+        Station gangNam = Station.of("강남역");
+        Station panGyo = Station.of("판교역");
 
-        stationRepository.save(Station.builder()
-                .name("강남역")
-                .lines(Arrays.asList(line_shin, line_2))
-                .build());
+        LineStation gangNamLineStation1 = LineStation.builder()
+                .line(lineTwo)
+                .station(gangNam)
+                .preStationInfo(PreStationInfo.of(panGyo, 10))
+                .build();
+        gangNam.addLineStation(gangNamLineStation1);
+
+        LineStation gangNamLineStation2 = LineStation.builder()
+                .line(lineShin)
+                .station(gangNam)
+                .preStationInfo(PreStationInfo.of(panGyo, 10))
+                .build();
+        gangNam.addLineStation(gangNamLineStation2);
+
+        LineStation panGyoLineStation = LineStation.builder()
+                .line(lineShin)
+                .station(panGyo)
+                .preStationInfo(PreStationInfo.of(null, 0))
+                .build();
+        panGyo.addLineStation(panGyoLineStation);
+
+        stationRepository.save(gangNam);
+        stationRepository.save(panGyo);
     }
 
     @Test
     @DisplayName("Station 추가")
     void insert_station_test() {
         // given
-        Station station = Station.builder()
-                .name("잠실역")
-                .build();
+        Station station = Station.of("잠실역");
 
         // when
         Station persistedStation = stationRepository.save(station);
@@ -117,9 +133,7 @@ public class StationRepositoryTest {
     @DisplayName("Station 전체 조회")
     void select_all_station_test() {
         // given
-        Station station = Station.builder()
-                .name("잠실역")
-                .build();
+        Station station = Station.of("잠실역");
         stationRepository.save(station);
 
         // when

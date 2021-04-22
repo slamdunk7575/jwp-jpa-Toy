@@ -1,16 +1,13 @@
 package me.toy.jwpjpa.station;
 
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.toy.jwpjpa.base.BaseEntity;
-import me.toy.jwpjpa.line.Line;
 import me.toy.jwpjpa.linestation.LineStation;
 
 import javax.persistence.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -26,18 +23,21 @@ public class Station extends BaseEntity {
     @OneToMany(mappedBy = "station", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LineStation> lineStations = new ArrayList<>();
 
-    @Builder
-    public Station(String name, List<Line> lines) {
+    public Station(String name) {
         this.name = name;
-        this.lineStations = Optional.ofNullable(lines)
-        .orElse(Collections.emptyList()).stream()
-        .map(line -> LineStation.of(line, this))
-        .collect(Collectors.toList());
+    }
+
+    public static Station of(String name) {
+        return new Station(name);
     }
 
     public Station updateName(String name) {
         this.name = name;
         return this;
+    }
+
+    public void addLineStation(LineStation lineStation) {
+        this.lineStations.add(lineStation);
     }
 
     @Override
