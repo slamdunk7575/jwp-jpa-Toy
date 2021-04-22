@@ -1,6 +1,7 @@
 package me.toy.jwpjpa.line;
 
 import me.toy.jwpjpa.linestation.LineStation;
+import me.toy.jwpjpa.linestation.PreStationInfo;
 import me.toy.jwpjpa.station.Station;
 import me.toy.jwpjpa.station.StationRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,29 +32,37 @@ class LineRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Station gangnam_station = stationRepository.save(Station.builder()
-                .name("강남역")
-                .build());
+        Station gangNam = stationRepository.save(Station.of("강남역"));
 
-        Station jamsil_station = stationRepository.save(Station.builder()
-                .name("잠실역")
-                .build());
+        Station jamSil = stationRepository.save(Station.of("잠실역"));
 
-        Station pangyo_station = stationRepository.save(Station.builder()
-                .name("판교역")
-                .build());
+        Station panGyo = stationRepository.save(Station.of("판교역"));
 
-        lineRepository.save(Line.builder()
+        Line lineTwo = Line.builder()
                 .name("2호선")
                 .color("초록색")
-                .stations(Arrays.asList(jamsil_station, gangnam_station))
+                .build();
+
+        lineTwo.addLineStation(LineStation.builder()
+                .line(lineTwo)
+                .station(jamSil)
+                .preStationInfo(PreStationInfo.of(gangNam, 15))
                 .build());
 
-        lineRepository.save(Line.builder()
+        lineRepository.save(lineTwo);
+
+        Line lineShin = Line.builder()
                 .name("신분당선")
                 .color("빨강색")
-                .stations(Arrays.asList(gangnam_station, pangyo_station))
+                .build();
+
+        lineTwo.addLineStation(LineStation.builder()
+                .line(lineTwo)
+                .station(gangNam)
+                .preStationInfo(PreStationInfo.of(panGyo, 10))
                 .build());
+
+        lineRepository.save(lineShin);
     }
 
     @Test
@@ -164,12 +173,8 @@ class LineRepositoryTest {
         assertAll(
                 () -> assertThat(stations).hasSize(2),
                 () -> assertThat(stations).contains(
-                        Station.builder()
-                                .name("강남역")
-                                .build(),
-                        Station.builder()
-                                .name("잠실역")
-                                .build())
+                        Station.of("잠실역"),
+                        Station.of("강남역"))
         );
     }
 
